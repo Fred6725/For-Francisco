@@ -1,0 +1,28 @@
+// This source code is subject to the terms of the Mozilla Public License 2.0 at https://mozilla.org/MPL/2.0/
+// © Fred6724
+
+//@version=6
+indicator("Simple Bullish 4-Candle Pattern", overlay=true)
+
+// First Candle Bullish
+firstCandleBullish  = close[2] > open[2] and close[2] > high[3]
+firstCandleLow      = low[2] > low[3]
+
+// Second Candle (Inside Candle + Hammer/Doji)
+secondCandleInside    = high[1] < high[2] and low[1] > low[2]
+secondCandleGreen     = close[1] > open[1]
+secondCandleSmallBody = math.abs(close[1] - open[1]) * 3 < (high[1] - low[1]) // Body Approx 3 times smaller than candle range
+
+// Conditions
+bullishPattern = firstCandleBullish and firstCandleLow and secondCandleInside and secondCandleGreen and secondCandleSmallBody
+
+// Display on graph
+plotshape(series=bullishPattern, 
+          location=location.belowbar, 
+          color=color.rgb(165,214,167,0), 
+          style=shape.triangleup, 
+          text='', 
+          size=size.small)
+
+// Alert
+alertcondition(bullishPattern, title="Bullish 4-Candle Pattern", message="Buy Signal Detected!")
