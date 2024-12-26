@@ -2,27 +2,247 @@
 // © Fred6724
 
 //@version=6
-indicator("Simple Bullish 4-Candle Pattern", overlay=true)
+indicator('4-Candle Pattern', overlay=true, max_labels_count = 500)
 
-// First Candle Bullish
-firstCandleBullish  = close[2] > open[2] and close[2] > high[3]
-firstCandleLow      = low[2] > low[3]
+// INPUT
+// Colors
+arrowColorUp     = input.color(color.rgb(165, 214, 167, 0), title='Arrow Up Color')
+arrowColorDown   = input.color(color.rgb(244, 143, 177, 0), title='Arrow Dn Color')
+dotColor         = input.color(color.rgb(255, 255, 255, 0), title='Dots Color'    )
+// Sizes
+// i_arrowSize      = input.string('Small', options=['Tiny', 'Small', 'Normal', 'Large'], title='Arrows Size')
+// i_dotSize        = input.string('Tiny',  options=['Tiny', 'Small', 'Normal', 'Large'], title='Dots Size'  )
 
-// Second Candle (Inside Candle + Hammer/Doji)
-secondCandleInside    = high[1] < high[2] and low[1] > low[2]
-secondCandleGreen     = close[1] > open[1]
-secondCandleSmallBody = math.abs(close[1] - open[1]) * 3 < (high[1] - low[1]) // Body Approx 3 times smaller than candle range
+// Static list of tickers
+// ticker1  = input.string('BINANCE:BTCUSDT', title='Ticker #1' )
+// ticker2  = input.string('', title='Ticker #2' )
+// ticker3  = input.string('', title='Ticker #3' )
+// ticker4  = input.string('', title='Ticker #4' )
+// ticker5  = input.string('', title='Ticker #5' )
+// ticker6  = input.string('', title='Ticker #6' )
+// ticker7  = input.string('', title='Ticker #7' )
+// ticker8  = input.string('', title='Ticker #8' )
+// ticker9  = input.string('', title='Ticker #9' )
+// ticker10 = input.string('', title='Ticker #10')
+// ticker11 = input.string('', title='Ticker #11')
+// ticker12 = input.string('', title='Ticker #12')
+// ticker13 = input.string('', title='Ticker #13')
+// ticker14 = input.string('', title='Ticker #14')
+// ticker15 = input.string('', title='Ticker #15')
+// ticker16 = input.string('', title='Ticker #16')
+// ticker17 = input.string('', title='Ticker #17')
+// ticker18 = input.string('', title='Ticker #18')
+// ticker19 = input.string('', title='Ticker #19')
+// ticker20 = input.string('', title='Ticker #20')
 
-// Conditions
-bullishPattern = firstCandleBullish and firstCandleLow and secondCandleInside and secondCandleGreen and secondCandleSmallBody
+// arrowSize = switch i_arrowSize
+//     'Normal'  => size.normal
+//     'Tiny'    => size.tiny
+//     'Small'   => size.small
+//     'Large'   => size.large
 
-// Display on graph
+// dotSize = switch i_dotSize
+//     'Normal'  => size.normal
+//     'Tiny'    => size.tiny
+//     'Small'   => size.small
+//     'Large'   => size.large
+// Dynamic Label Size changing in Inputs requires the use of label.new() function wich limit the numbers of label to 500. (Dot + Arrow Up/Dwn) )
+// label.new(bar_index, high, yloc = yloc.abovebar, style=label.style_circle, size = dotSize, color = dotColor)
+// label.new(bar_index, high, yloc = yloc.abovebar, style=label.style_arrowup, size = arrowSize, color = arrowColorUp)
+
+
+// BULLISH PATTERN ARROW
+// First Candle Conditions
+firstBullish   = close[2] > open[2] and close[2] > high[3]
+firstHigherLow = low[2] > low[3]
+// Second Candle Conditions
+secondInside   = high[1] < high[2] and low[1] > low[2]
+secondGreen    = close[1] > open[1]
+// Conditions for Signal
+bullishPattern = firstBullish and firstHigherLow and secondInside and secondGreen
+// Display on Graph
 plotshape(series=bullishPattern, 
           location=location.belowbar, 
-          color=color.rgb(165,214,167,0), 
+          color=arrowColorUp, 
           style=shape.triangleup, 
           text='', 
           size=size.small)
 
-// Alert
-alertcondition(bullishPattern, title="Bullish 4-Candle Pattern", message="Buy Signal Detected!")
+
+// BULLISH PATTERN DOT
+// First Candle Conditions
+middleFirstBullish   = close[1] > open[1] and close[1] > high[2]
+middleFirstHigherLow = low[1] > low[2]
+// Second Candle Conditions
+middleSecondInside   = high < high[1] and low > low[1]
+middleSecondGreen    = close > open
+// Conditions for signal
+isPatternForming     = middleFirstBullish and middleFirstHigherLow and middleSecondInside and middleSecondGreen
+// Display on graph
+plotshape(series=isPatternForming, 
+          location=location.abovebar, 
+          color=dotColor, 
+          style=shape.circle, 
+          text='', 
+          size=size.tiny)
+
+
+
+// BEARISH PATTERN ARROW
+// First Candle Conditions
+firstBearish     = close[2] < open[2] and close[2] < low[3]
+firstLowerHigh   = high[2] < high[3]
+// Second Candle Conditions
+secondInsideRed  = high[1] < high[2] and low[1] > low[2]
+secondRed        = close[1] < open[1]
+// Conditions for Signal
+bearishPattern   = firstBearish and firstLowerHigh and secondInsideRed and secondRed
+// Display on Graph
+plotshape(series=bearishPattern, 
+          location=location.abovebar, 
+          color=arrowColorDown, 
+          style=shape.triangledown, 
+          text='', 
+          size=size.small)
+
+
+// BEARISH PATTERN DOT
+// First Candle Conditions
+middleFirstBearish      = close[1] < open[1] and close[1] < low[2]
+middleFirstLowerHigh    = high[1] < high[2]
+// Second Candle Conditions
+bearishSecondInside     = high < high[1] and low > low[1]
+bearishSecondRed        = close < open
+// Conditions for Signal
+isBearishPatternForming = middleFirstBearish and middleFirstLowerHigh and bearishSecondInside    and bearishSecondRed
+// Display on Graph
+plotshape(series=isBearishPatternForming, 
+          location=location.belowbar, 
+          color=dotColor, 
+          style=shape.circle, 
+          text='', 
+          size=size.tiny)
+
+
+
+// ALERT SYSTEM
+// FUNCTION: Detect Bullish Patterns for Specific Asset
+// f_detect_bullish_patterns(asset) =>
+//     // Retrieve data for the specific asset
+//     o = request.security(asset, timeframe.period, open)
+//     h = request.security(asset, timeframe.period, high)
+//     l = request.security(asset, timeframe.period, low)
+//     c = request.security(asset, timeframe.period, close)
+
+//     // BULLISH PATTERN CONDITIONS
+//     BUP1 = c[2] > o[2] and c[2] > h[3]
+//     BUP2 = l[2] > l[3]
+//     BUP3 = h[1] < h[2] and l[1] > l[2]
+//     BUP4 = c[1] > o[1]
+//     bullish = BUP1 and BUP2 and BUP3 and BUP4
+
+//     bullish
+
+// // FUNCTION: Detect Bearish Patterns for Specific Asset
+// f_detect_bearish_patterns(asset) =>
+//     // Retrieve data for the specific asset
+//     o = request.security(asset, timeframe.period, open)
+//     h = request.security(asset, timeframe.period, high)
+//     l = request.security(asset, timeframe.period, low)
+//     c = request.security(asset, timeframe.period, close)
+
+//     // BEARISH PATTERN CONDITIONS
+//     BEP1 = c[2] < o[2] and c[2] < l[3]
+//     BEP2 = h[2] < h[3]
+//     BEP3 = h[1] < h[2] and l[1] > l[2]
+//     BEP4 = c[1] < o[1]
+//     bearish = BEP1 and BEP2 and BEP3 and BEP4
+
+//     bearish
+
+// Detect patterns for each ticker
+// // Bullish
+// bullish1  = f_detect_bullish_patterns(ticker1 )
+// bullish2  = f_detect_bullish_patterns(ticker2 )
+// bullish3  = f_detect_bullish_patterns(ticker3 )
+// bullish4  = f_detect_bullish_patterns(ticker4 )
+// bullish5  = f_detect_bullish_patterns(ticker5 )
+// bullish6  = f_detect_bullish_patterns(ticker6 )
+// bullish7  = f_detect_bullish_patterns(ticker7 )
+// bullish8  = f_detect_bullish_patterns(ticker8 )
+// bullish9  = f_detect_bullish_patterns(ticker9 )
+// bullish10 = f_detect_bullish_patterns(ticker10)
+// // Bearish
+// bearish1  = f_detect_bearish_patterns(ticker1 )
+// bearish2  = f_detect_bearish_patterns(ticker2 )
+// bearish3  = f_detect_bearish_patterns(ticker3 )
+// bearish4  = f_detect_bearish_patterns(ticker4 )
+// bearish5  = f_detect_bearish_patterns(ticker5 )
+// bearish6  = f_detect_bearish_patterns(ticker6 )
+// bearish7  = f_detect_bearish_patterns(ticker7 )
+// bearish8  = f_detect_bearish_patterns(ticker8 )
+// bearish9  = f_detect_bearish_patterns(ticker9 )
+// bearish10 = f_detect_bearish_patterns(ticker10)
+
+
+// Messages
+// // Bullish
+// string bullish_signal1  = ticker2
+// string bullish_signal2  = ticker2
+// string bullish_signal3  = ticker3
+// string bullish_signal4  = ticker4
+// string bullish_signal5  = ticker5
+// string bullish_signal6  = ticker6
+// string bullish_signal7  = ticker7
+// string bullish_signal8  = ticker8
+// string bullish_signal9  = ticker9
+// string bullish_signal10 = ticker10
+// // Bearish
+// string bearish_signal1  = ticker1
+// string bearish_signal2  = ticker2
+// string bearish_signal3  = ticker3
+// string bearish_signal4  = ticker4
+// string bearish_signal5  = ticker5
+// string bearish_signal6  = ticker6
+// string bearish_signal7  = ticker7
+// string bearish_signal8  = ticker8
+// string bearish_signal9  = ticker9
+// string bearish_signal10 = ticker10
+
+
+
+// NOTE A MOI MEME
+// On a maintenant une structure viable
+// Reste à 
+// 1) Terminer le développement
+// 2)
+// 3) Tester avec une condition du style prix > 0 pour voir si le ticker s'affiche bien et l'alerte aussi
+
+// ALERTS 
+// Bullish
+// alertcondition(close>0,  title='Bullish Pattern 1', message='Bullish pattern on {{bullish_signal1}}' )
+// alertcondition(bullish2,  title='Bullish Pattern 2',  message='Bullish pattern on {{bullish_signal2}}' )
+// alertcondition(bullish3,  title='Bullish Pattern 3',  message='Bullish pattern on {{bullish_signal3}}' )
+// alertcondition(bullish4,  title='Bullish Pattern 4',  message='Bullish pattern on {{bullish_signal4}}' )
+// alertcondition(bullish5,  title='Bullish Pattern 5',  message='Bullish pattern on {{bullish_signal5}}' )
+// alertcondition(bullish6,  title='Bullish Pattern 6',  message='Bullish pattern on {{bullish_signal6}}' )
+// alertcondition(bullish7,  title='Bullish Pattern 7',  message='Bullish pattern on {{bullish_signal7}}' )
+// alertcondition(bullish8,  title='Bullish Pattern 8',  message='Bullish pattern on {{bullish_signal8}}' )
+// alertcondition(bullish9,  title='Bullish Pattern 9',  message='Bullish pattern on {{bullish_signal9}}' )
+// alertcondition(bullish10, title='Bullish Pattern 10', message='Bullish pattern on {{bullish_signal10}}')
+
+// // Bearish
+// alertcondition(bearish1,  title='Bearish Pattern 1',  message='Bearish pattern on {{bearish_signal1}}' )
+// alertcondition(bearish2,  title='Bearish Pattern 2',  message='Bearish pattern on {{bearish_signal2}}' )
+// alertcondition(bearish3,  title='Bearish Pattern 3',  message='Bearish pattern on {{bearish_signal3}}' )
+// alertcondition(bearish4,  title='Bearish Pattern 4',  message='Bearish pattern on {{bearish_signal4}}' )
+// alertcondition(bearish5,  title='Bearish Pattern 5',  message='Bearish pattern on {{bearish_signal5}}' )
+// alertcondition(bearish6,  title='Bearish Pattern 6',  message='Bearish pattern on {{bearish_signal6}}' )
+// alertcondition(bearish7,  title='Bearish Pattern 7',  message='Bearish pattern on {{bearish_signal7}}' )
+// alertcondition(bearish8,  title='Bearish Pattern 8',  message='Bearish pattern on {{bearish_signal8}}' )
+// alertcondition(bearish9,  title='Bearish Pattern 9',  message='Bearish pattern on {{bearish_signal9}}' )
+// alertcondition(bearish10, title='Bearish Pattern 10', message='Bearish pattern on {{bearish_signal10}}')
+
+
+// Table alert
+// Utiliser un tableau pour préciser le ticker en même temps que l'alerte se déclenche
