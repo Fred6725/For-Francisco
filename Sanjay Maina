@@ -1,0 +1,70 @@
+//@version=6
+indicator("Champion Trader Indicator", format=format.volume, precision = 4)
+
+// Input Colors
+pos_Vol = input(color.rgb(102, 187, 106, 0), title='Color Up', group = 'VOLUMES')
+neg_Vol = input(color.rgb(247, 82, 95, 0)  , title='Color Dn', group = 'VOLUMES')
+low_Vol = input(color.rgb(209, 212, 220)   , title='Low Volume Color', group = 'VOLUMES')
+// Inputs
+show_inCr   = input(true, title="Format Avg turnover in crores? (Shown in Million otherwise)")
+show_sector = input(true, title="Show Sector and Industry?")
+
+
+vol = volume
+volColor = close>close[1]?pos_Vol:neg_Vol
+// Low Relative Volume
+lowRVol = ta.lowest(vol, 10)
+if(lowRVol==vol)
+    volColor := low_Vol
+plot(vol, color=volColor, title="Volume", style=plot.style_histogram, display = display.all, linewidth = 4)
+
+
+show_volMa = input(true, title="Show Volume MA", group='Volume MA')
+malen = input(30, title='Volume MA Length', group='Volume MA')
+ma = ta.ema(vol, malen)
+plot(show_volMa? ma : vol, color=color.orange, title="Volume MA", display = display.all)
+
+
+tf = input.timeframe("D", title="Reset Timeframe")
+avg_len1 = input(30, title="Average Length 1")
+avg_len2 = input(100, title="Average Length 2")
+
+
+avg1 =  request.security(syminfo.tickerid, tf, ta.sma(vol, avg_len1)[1], barmerge.gaps_off, barmerge.lookahead_on)
+avg2 =  request.security(syminfo.tickerid, tf, ta.sma(vol, avg_len2)[1], barmerge.gaps_off, barmerge.lookahead_on)
+
+
+ratio1 = vol/avg1
+ratio2 = vol/avg2
+
+
+var LBL = label.new(bar_index, 0, style=label.style_label_lower_left, color=color.gray, textcolor=#000000)
+label.set_xy(LBL, bar_index, vol)
+label.set_text(LBL, str.tostring(ratio1, '#.##') + '\n' + str.tostring(ratio2, '#.##'))
+
+
+// plotchar(show_inCr ? vol / 1e7 : vol, title="Volume", char="", location=location.top, color=volColor)
+// plotchar(show_inCr ? ma / 1e7 : ma, title="Volume MA", char="", location=location.top, color=color.orange)
+plotchar(show_inCr ? ma * close / 1e7 : ma * close, title="Avg Turnover", char="", location=location.top, color=color.new(color.yellow ,0))
+
+
+ma1 = ta.ema((ta.rma(ta.tr(true), 1)/close*100), 50)
+plotchar(ma1, title="TRP", char="", location=location.top, color=color.new(color.white ,0))
+
+
+sector = syminfo.sector
+industry = syminfo.industry
+
+table_Size  = input.string('Small', 'Table Size', options = ['Tiny', 'Small', 'Normal', 'Large'], group = 'Table')
+// Used to Change the Size of the Table displaying Sector & Industry
+size_Table = switch table_Size
+    'Normal'  => size.normal
+    'Tiny'    => size.tiny
+    'Small'   => size.small
+    'Large'   => size.large
+
+
+var table= table.new(position= position.top_right, columns = 2, rows= 1, border_width=1 )
+
+table.cell(table, 0, 0, show_sector ? sector : na,   text_color = color.rgb(151,154,163,0), bgcolor = color.rgb(255,255,255,100), text_size= size_Table, width=0, height=0)
+table.cell(table, 1, 0, show_sector ? industry : na, text_color = color.rgb(151,154,163,0), bgcolor = color.rgb(255,255,255,100), text_size= size_Table, width=0, height=0)
